@@ -13,7 +13,7 @@ import java.util.List;
 @RequestMapping("/api")
 public class TutorialController {
     public static final String TUTORIALS = "/tutorials";
-    TutorialRepository tutorialRepository;
+    private final TutorialRepository tutorialRepository;
     private List<Tutorial> tutorials;
 
     public TutorialController(TutorialRepository tutorialRepository) {
@@ -21,20 +21,25 @@ public class TutorialController {
     }
 
     /**
-     * Get By title
+     * Fetch all tutorials or filter by title if the title parameter is provided.
      *
-     * @return an ambiguous call
+     * @param titleName Optional title filter.
+     * @return ResponseEntity with the list of tutorials.
      */
-    /*@GetMapping("tutorials/{x}")
-    public ResponseEntity<Object> getAllTutorialsByTitle(@PathVariable(required = true, name = "x") String titleName) {
-        tutorials = tutorialRepository.findByTitle(titleName);
-        return new ResponseEntity<>(tutorials, HttpStatus.OK);
-    }*/
-    @GetMapping(TUTORIALS)
-    public ResponseEntity<Object> getAllTutorials() {
-        tutorials = tutorialRepository.findAll();
+    @GetMapping("/tutorials")
+    public ResponseEntity<List<Tutorial>> getAllTutorials(@RequestParam(name = "title", required = false) String titleName) {
+        List<Tutorial> tutorials;
+        if (titleName != null && !titleName.isEmpty()) {
+            tutorials = tutorialRepository.findByTitleContaining(titleName);
+        } else {
+            tutorials = tutorialRepository.findAll();
+        }
+        if (tutorials.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
         return new ResponseEntity<>(tutorials, HttpStatus.OK);
     }
+
 
     //ambiguous call
     @GetMapping("/tutorials/{id}")
